@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>信義房屋｜分店清潔檢查紀錄系統</title>
+  <style>
+    /* ══ 信義房屋品牌色彩（綠白主調，紅色點綴）══
+       主綠  --sy-green  #1A6B35
+       深綠  --sy-dark   #0F4A25
+       淺綠底 --sy-light  #F0F7F2
+       綠邊框 --sy-border #B8DBBF
+       點綴紅 --sy-red    #C8102E
+    ════════════════════════════════════════════ */
+    :root {
+      --sy-green:  #1A6B35;
+      --sy-dark:   #0F4A25;
+      --sy-light:  #F0F7F2;
+      --sy-border: #B8DBBF;
+      --sy-red:    #C8102E;
+      --sy-text:   #1C2B1C;
+      --sy-gray:   #667766;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+      background: #F2F7F3;
+      color: var(--sy-text);
+      min-height: 100vh;
+    }
+    .hidden { display: none !important; }
+
+    /* ── App Header ── */
+    .app-header {
+      background: var(--sy-green);
+      color: white;
+      padding: 0 24px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(26,107,53,0.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .hd-left { display: flex; align-items: center; gap: 12px; }
+    .hd-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 900; letter-spacing: 1px;
+    }
+    .hd-logo-icon {
+      width: 30px; height: 30px; background: white; border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hd-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.3); }
+    .app-header h1 { font-size: 14px; opacity: 0.92; }
+    .app-header .user-info { font-size: 13px; opacity: 0.82; }
+    .btn-logout {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 5px 14px; border-radius: 4px;
+      cursor: pointer; font-size: 13px; font-family: inherit;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.28); }
+
+    /* ── Login ── */
+    .login-page {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(155deg, #0A3018 0%, #1A6B35 55%, #2E8B50 100%);
+      padding: 20px;
+    }
+    .login-box {
+      width: 100%; max-width: 420px;
+      background: white; border-radius: 16px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.3); overflow: hidden;
+    }
+    .login-head {
+      background: var(--sy-green); color: white;
+      padding: 28px 32px 22px; text-align: center;
+    }
+    .login-brand {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+    .brand-text {
+      font-size: 32px; font-weight: 800; letter-spacing: 4px;
+      color: white; font-family: "Microsoft JhengHei","微軟正黑體",Arial,sans-serif;
+    }
+    .login-head h2 { font-size: 13px; opacity: 0.82; font-weight: 400; margin-top: 6px; letter-spacing: 0.5px; }
+    .login-body { padding: 26px 32px 30px; }
+    .role-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 22px; }
+    .role-tab {
+      flex: 1; padding: 10px; text-align: center; cursor: pointer;
+      font-size: 14px; color: #888; border-bottom: 3px solid transparent;
+      margin-bottom: -2px; transition: all 0.2s;
+    }
+    .role-tab.active { color: var(--sy-green); border-bottom-color: var(--sy-green); font-weight: 700; }
+
+    /* ── Form controls ── */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #444; }
+    .form-control {
+      width: 100%; padding: 9px 12px; background: #FAFAFA;
+      border: 1.5px solid #e0e0e0; border-radius: 6px;
+      font-size: 14px; font-family: inherit; transition: border-color 0.2s;
+    }
+    .form-control:focus { outline: none; border-color: var(--sy-green); background: white; }
+    .btn-primary {
+      width: 100%; background: var(--sy-green); color: white;
+      border: none; padding: 12px; border-radius: 6px;
+      font-size: 15px; cursor: pointer; font-family: inherit;
+      font-weight: 700; transition: background 0.2s; letter-spacing: 1px;
+    }
+    .btn-primary:hover { background: var(--sy-dark); }
+    .btn-secondary {
+      background: white; color: var(--sy-green);
+      border: 1.5px solid var(--sy-green); padding: 9px 18px;
+      border-radius: 6px; font-size: 13px;
+      cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: var(--sy-light); }
+    .btn-ghost {
+      background: white; color: #888; border: 1.5px solid #ddd; padding: 9px 18px;
+      border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600;
+    }
+    .btn-ghost:hover { border-color: #aaa; color: #555; }
+    .error-msg { color: var(--sy-red); font-size: 12px; margin-top: 5px; }
+
+    /* ── Main container ── */
+    .main-wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ── Nav tabs ── */
+    .nav-tabs {
+      display: flex; gap: 4px; background: white; padding: 5px;
+      border-radius: 8px; margin-bottom: 18px;
+      border: 1px solid var(--sy-border);
+      box-shadow: 0 1px 4px rgba(26,107,53,0.08);
+    }
+    .nav-tab {
+      flex: 1; padding: 9px; text-align: center; border-radius: 6px;
+      cursor: pointer; font-size: 14px; color: #888; transition: all 0.2s;
+    }
+    .nav-tab.active { background: var(--sy-green); color: white; font-weight: 700; }
+    .nav-tab:hover:not(.active) { background: var(--sy-light); color: var(--sy-green); }
+
+    /* ── Card ── */
+    .card {
+      background: white; border-radius: 10px; padding: 22px; margin-bottom: 16px;
+      box-shadow: 0 1px 8px rgba(26,107,53,0.08); border-top: 3px solid var(--sy-green);
+    }
+    .card-title {
+      font-size: 15px; font-weight: 700; color: var(--sy-green);
+      padding-bottom: 10px; margin-bottom: 16px;
+      border-bottom: 1.5px solid var(--sy-border);
+    }
+
+    /* ── Slot tabs ── */
+    .slot-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .slot-tab {
+      padding: 7px 24px; border: 1.5px solid #ddd; border-radius: 20px;
+      cursor: pointer; font-size: 14px; background: white; font-family: inherit; color: #666;
+      transition: all 0.2s;
+    }
+    .slot-tab.active { background: var(--sy-green); border-color: var(--sy-green); color: white; font-weight: 700; }
+    .slot-tab:hover:not(.active) { border-color: var(--sy-green); color: var(--sy-green); }
+
+    /* ── Check items ── */
+    .items-grid { display: grid; gap: 10px; }
+    .check-item {
+      border: 1.5px solid #ebebeb; border-radius: 8px; padding: 13px 16px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .check-item:hover { border-color: var(--sy-green); background: var(--sy-light); }
+    .check-item.checked { background: var(--sy-light); border-color: var(--sy-green); }
+    .check-item input[type=checkbox] {
+      width: 20px; height: 20px; cursor: pointer; accent-color: var(--sy-green); flex-shrink: 0;
+    }
+    .item-info { flex: 1; }
+    .item-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .item-std  { font-size: 12px; color: #999; }
+    .item-badge {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+    }
+    .check-item.checked .item-badge { background: var(--sy-green); color: white; }
+    .check-item:not(.checked) .item-badge { background: #f0f0f0; color: #ccc; }
+
+    /* ── Signature ── */
+    .sig-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+    .sig-label { font-size: 13px; font-weight: 700; white-space: nowrap; color: #444; }
+    .sig-input {
+      flex: 1; padding: 9px 12px; border: 1.5px solid #e0e0e0;
+      border-radius: 6px; font-size: 14px; font-family: inherit; background: #FAFAFA;
+    }
+    .sig-input:focus { outline: none; border-color: var(--sy-green); background: white; }
+
+    /* ── Progress ── */
+    .prog-row { display: flex; align-items: center; gap: 10px; }
+    .prog-bar { flex: 1; height: 7px; background: #e0ece3; border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; background: var(--sy-green); border-radius: 4px; transition: width 0.35s; }
+    .prog-text { font-size: 12px; color: #999; white-space: nowrap; }
+
+    /* ── Submit row ── */
+    .submit-row { display: flex; gap: 10px; margin-top: 18px; }
+
+    /* ── Monthly table ── */
+    .tbl-wrap { overflow-x: auto; }
+    .mon-table {
+      width: 100%; border-collapse: collapse; font-size: 12px; min-width: 680px;
+    }
+    .mon-table th, .mon-table td {
+      border: 1px solid #ccc; text-align: center; vertical-align: middle;
+    }
+    .mon-table th { background: var(--sy-green); color: white; padding: 6px 4px; font-weight: 700; }
+    .mon-table .th-sub { background: var(--sy-dark); font-size: 10px; padding: 4px 3px; }
+    .mon-table td { padding: 5px 3px; }
+    .mon-table .date-cell { font-weight: 700; background: #EAF4EC; width: 36px; font-size: 13px; color: var(--sy-dark); }
+    .mon-table tr:nth-child(even) td:not(.date-cell) { background: #F7FBF8; }
+    .chk-y { color: var(--sy-green); font-size: 15px; font-weight: 700; }
+    .chk-n { color: #ddd; font-size: 13px; }
+    .mon-title {
+      display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+      text-align: center; font-size: 15px; font-weight: 700;
+      color: var(--sy-dark); padding: 10px 8px; margin-bottom: 10px;
+      border-bottom: 2px solid var(--sy-green);
+    }
+    /* 紅色點綴：月表標題的分店標籤 */
+    .mon-branch-tag {
+      background: var(--sy-red); color: white;
+      padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+    }
+
+    /* ── Manager summary ── */
+    .summary-bar {
+      display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+      padding: 12px 16px; background: var(--sy-light);
+      border: 1px solid var(--sy-border); border-radius: 8px; margin-bottom: 16px; font-size: 14px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--sy-dark); color: white; padding: 11px 20px;
+      border-radius: 8px; font-size: 14px;
+      transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 9999;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.ok  { background: var(--sy-green); }
+    .toast.err { background: var(--sy-red); }
+
+    /* ── Print ── */
+    @media print {
+      .app-header, .nav-tabs, .slot-tabs, .submit-row, .toast,
+      .no-print, .btn-secondary, .btn-primary, .btn-ghost,
+      .prog-row, .sig-row, .summary-bar, .card-title { display: none !important; }
+      body { background: white; }
+      .card { box-shadow: none; padding: 0; border-top: none; }
+      .main-wrap { padding: 0; max-width: 100%; }
+      .mon-table th { background: var(--sy-green) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mon-table .th-sub { background: var(--sy-dark) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mon-table .date-cell { background: #EAF4EC !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<!-- ══════════════════════════════════════
+     登入頁
+══════════════════════════════════════ -->
+<div id="v-login">
+  <div class="login-page">
+    <div class="login-box">
+      <div class="login-head">
+        <div class="login-brand">
+          <span class="brand-text">信義房屋</span>
+        </div>
+        <h2>分店清潔檢查紀錄系統</h2>
+      </div>
+      <div class="login-body">
+        <div class="role-tabs">
+          <div class="role-tab active" onclick="switchRole('staff')">👤 分店秘書</div>
+          <div class="role-tab" onclick="switchRole('manager')">👔 區主管</div>
+        </div>
+
+        <div id="staff-form">
+          <div class="form-group">
+            <label class="form-label">選擇分店</label>
+            <select id="branch-sel" class="form-control">
+              <option value="">── 請選擇分店 ──</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">分店密碼</label>
+            <input type="password" id="branch-pwd" class="form-control"
+              placeholder="請輸入分店密碼"
+              onkeydown="if(event.key==='Enter')doStaffLogin()">
+            <div class="error-msg hidden" id="staff-err">帳號或密碼錯誤，請重試</div>
+          </div>
+          <button class="btn-primary" onclick="doStaffLogin()">登入</button>
+        </div>
+
+        <div id="mgr-form" class="hidden">
+          <div class="form-group">
+            <label class="form-label">區主管密碼</label>
+            <input type="password" id="mgr-pwd" class="form-control"
+              placeholder="請輸入區主管密碼"
+              onkeydown="if(event.key==='Enter')doMgrLogin()">
+            <div class="error-msg hidden" id="mgr-err">密碼錯誤，請重試</div>
+          </div>
+          <button class="btn-primary" onclick="doMgrLogin()">登入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     分店秘書頁
+══════════════════════════════════════ -->
+<div id="v-staff" class="hidden">
+  <div class="app-header">
+    <div class="hd-left">
+      <div class="hd-logo">
+        信義房屋
+      </div>
+      <div class="hd-divider"></div>
+      <h1>🧹 清潔檢查紀錄</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="user-info" id="staff-hd-name"></span>
+      <button class="btn-logout" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+  <div class="main-wrap">
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tab-form"    onclick="staffSwitchTab('form')">📝 今日填寫</div>
+      <div class="nav-tab"        id="tab-monthly" onclick="staffSwitchTab('monthly')">📅 月表檢視</div>
+    </div>
+
+    <!-- 今日填寫 -->
+    <div id="panel-form">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div>
+            <div style="font-size:12px;color:#aaa;margin-bottom:4px">填寫日期</div>
+            <input type="date" id="form-date" class="form-control" style="width:auto" onchange="loadDay()">
+          </div>
+          <div style="text-align:right;min-width:170px">
+            <div class="prog-row">
+              <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+              <div class="prog-text" id="prog-text">0 / 15</div>
+            </div>
+            <div style="font-size:11px;color:#bbb;margin-top:3px">今日三時段完成進度</div>
+          </div>
+        </div>
+
+        <div class="slot-tabs">
+          <button class="slot-tab active" id="st-morning" onclick="switchSlot('morning')">🌅 早</button>
+          <button class="slot-tab"        id="st-midday"  onclick="switchSlot('midday')">☀️ 中</button>
+          <button class="slot-tab"        id="st-evening" onclick="switchSlot('evening')">🌙 晚</button>
+        </div>
+
+        <div class="items-grid" id="items-grid"></div>
+
+        <div class="sig-row">
+          <span class="sig-label">值班簽名</span>
+          <input type="text" class="sig-input" id="sig-in" placeholder="請輸入姓名" oninput="refreshProgress()">
+        </div>
+
+        <div class="submit-row">
+          <button class="btn-primary" onclick="saveSlot()" style="flex:1">💾 儲存此時段記錄</button>
+          <button class="btn-ghost"   onclick="clearSlot()">清除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 月表檢視 -->
+    <div id="panel-monthly" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:0">本月清潔紀錄表</div>
+          <div class="no-print" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="s-year"  class="form-control" style="width:auto" onchange="renderStaffTable()"></select>
+            <select id="s-month" class="form-control" style="width:auto" onchange="renderStaffTable()">
+              <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+              <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+              <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+              <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+            </select>
+            <button class="btn-secondary" onclick="window.print()">🖨️ 列印</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="staff-tbl-wrap">
+          <p style="color:#ccc;text-align:center;padding:30px">載入中…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     區主管頁
+══════════════════════════════════════ -->
+<div id="v-manager" class="hidden">
+  <div class="app-header">
+    <div class="hd-left">
+      <div class="hd-logo">
+        信義房屋
+      </div>
+      <div class="hd-divider"></div>
+      <h1>📊 業十八區主管後台</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="user-info">區主管帳號</span>
+      <button class="btn-logout" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+  <div class="main-wrap">
+    <div class="card">
+      <div class="card-title">業十八區｜查詢各分店清潔紀錄</div>
+      <div class="no-print" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+        <div>
+          <label class="form-label" style="margin-bottom:4px">分店</label>
+          <select id="mgr-branch" class="form-control" style="width:auto" onchange="renderMgrTable()">
+            <option value="">── 請選擇分店 ──</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="margin-bottom:4px">年份</label>
+          <select id="mgr-year"  class="form-control" style="width:auto" onchange="renderMgrTable()"></select>
+        </div>
+        <div>
+          <label class="form-label" style="margin-bottom:4px">月份</label>
+          <select id="mgr-month" class="form-control" style="width:auto" onchange="renderMgrTable()">
+            <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+            <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+            <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+            <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+          </select>
+        </div>
+        <button class="btn-secondary" onclick="window.print()">🖨️ 列印</button>
+      </div>
+      <div id="mgr-summary"></div>
+      <div class="tbl-wrap" id="mgr-tbl-wrap">
+        <p style="color:#ccc;text-align:center;padding:40px">請選擇分店與月份查詢</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   ⚙️  設定區：修改分店名稱、店主管、密碼
+   ================================================================ */
+const CFG = {
+  // 業十八區 分店清單 { name, manager, password }
+  branches: [
+    { name: "汐止店",     manager: "李杰儒", password: "sinyi2026" },
+    { name: "新台五店",   manager: "伍威儒", password: "sinyi2026" },
+    { name: "汐科店",     manager: "王祖彬", password: "sinyi2026" },
+    { name: "汐明峰店",   manager: "郭垣甫", password: "sinyi2026" },
+    { name: "汐止建成店", manager: "江正良", password: "sinyi2026" },
+    { name: "汐止仁愛店", manager: "張功旭", password: "sinyi2026" },
+    { name: "汐止福德店", manager: "吳佳瑩", password: "sinyi2026" },
+    { name: "汐止樟樹店", manager: "廖順輝", password: "sinyi2026" },
+    { name: "汐止康寧店", manager: "趙松竣", password: "sinyi2026" },
+    { name: "汐止站前店", manager: "趙崧竣", password: "sinyi2026" },
+  ],
+  // 區主管密碼
+  managerPwd: "manager2026",
+  /* ── Firebase（部署後填入，現使用 localStorage）──
+  useFirebase: false,
+  firebase: { apiKey:"", authDomain:"", projectId:"", storageBucket:"", messagingSenderId:"", appId:"" }
+  ── */
+};
+
+/* ── 清潔項目 ── */
+const ITEMS = [
+  { id:"glass",     icon:"🪟", name:"玻璃門＋櫥窗", std:"透明潔淨、無指紋、掌紋、污漬" },
+  { id:"floor",     icon:"🧹", name:"地板",          std:"保持乾燥、無髒污、腳印"       },
+  { id:"reception", icon:"🪑", name:"接待桌",        std:"桌椅整齊、桌面無指紋"         },
+  { id:"restroom",  icon:"🚻", name:"廁所",           std:"地板乾淨、洗手台乾淨、馬桶無髒污" },
+  { id:"staffarea", icon:"💼", name:"同仁座位區",    std:"桌面整齊、無垃圾"             },
+];
+const SLOTS      = ["morning","midday","evening"];
+const SLOT_LBL   = { morning:"早", midday:"中", evening:"晚" };
+const SLOT_ICON  = { morning:"🌅", midday:"☀️", evening:"🌙" };
+
+/* ── State ── */
+let gBranch = null;
+let gSlot   = "morning";
+let gData   = {};   // { morning:{items:{},sig:""}, … }
+
+/* ================================================================
+   初始化
+   ================================================================ */
+(function init() {
+  const now = new Date();
+
+  // 分店下拉
+  ["branch-sel","mgr-branch"].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    CFG.branches.forEach((b,i) => {
+      const o = document.createElement("option");
+      o.value = i; o.textContent = b.name;
+      sel.appendChild(o);
+    });
+  });
+
+  // 年份下拉
+  ["s-year","mgr-year"].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    for (let y = now.getFullYear()-1; y <= now.getFullYear()+1; y++) {
+      const o = document.createElement("option");
+      o.value = y; o.textContent = y + " 年";
+      if (y === now.getFullYear()) o.selected = true;
+      sel.appendChild(o);
+    }
+  });
+
+  // 月份預設
+  const cm = now.getMonth() + 1;
+  ["s-month","mgr-month"].forEach(id => {
+    const s = document.getElementById(id);
+    if (s) s.value = cm;
+  });
+
+  // 日期預設
+  const fd = document.getElementById("form-date");
+  if (fd) fd.valueAsDate = now;
+
+  // 還原 session
+  try {
+    const sess = JSON.parse(sessionStorage.getItem("sy_sess") || "null");
+    if (sess && sess.role === "manager") {
+      showMgr();
+    } else if (sess && sess.role === "staff" && sess.bi != null) {
+      gBranch = sess.bi;
+      showStaff();
+    }
+  } catch(e) {}
+})();
+
+/* ================================================================
+   登入 / 登出
+   ================================================================ */
+function switchRole(role) {
+  document.querySelectorAll(".role-tab").forEach((t,i) =>
+    t.classList.toggle("active", (role==="staff"&&i===0)||(role==="manager"&&i===1))
+  );
+  document.getElementById("staff-form").classList.toggle("hidden", role!=="staff");
+  document.getElementById("mgr-form").classList.toggle("hidden",   role!=="manager");
+}
+
+function doStaffLogin() {
+  const idx = document.getElementById("branch-sel").value;
+  const pwd = document.getElementById("branch-pwd").value;
+  const err = document.getElementById("staff-err");
+  if (idx === "") { err.textContent = "請先選擇分店"; err.classList.remove("hidden"); return; }
+  if (pwd !== CFG.branches[idx].password) { err.classList.remove("hidden"); return; }
+  err.classList.add("hidden");
+  gBranch = parseInt(idx);
+  sessionStorage.setItem("sy_sess", JSON.stringify({ role:"staff", bi:gBranch }));
+  document.getElementById("branch-pwd").value = "";
+  showStaff();
+}
+
+function doMgrLogin() {
+  const pwd = document.getElementById("mgr-pwd").value;
+  const err = document.getElementById("mgr-err");
+  if (pwd !== CFG.managerPwd) { err.classList.remove("hidden"); return; }
+  err.classList.add("hidden");
+  sessionStorage.setItem("sy_sess", JSON.stringify({ role:"manager" }));
+  document.getElementById("mgr-pwd").value = "";
+  showMgr();
+}
+
+function doLogout() {
+  sessionStorage.removeItem("sy_sess");
+  gBranch = null;
+  showView("v-login");
+}
+
+/* ── Views ── */
+function showView(id) {
+  ["v-login","v-staff","v-manager"].forEach(v =>
+    document.getElementById(v).classList.toggle("hidden", v!==id)
+  );
+}
+function showStaff() {
+  const b = CFG.branches[gBranch];
+  document.getElementById("staff-hd-name").textContent =
+    b.name + "　店主管：" + b.manager;
+  showView("v-staff");
+  loadDay();
+}
+function showMgr() { showView("v-manager"); }
+
+/* ── Staff tabs ── */
+function staffSwitchTab(tab) {
+  ["form","monthly"].forEach(t => {
+    document.getElementById("tab-"+t).classList.toggle("active", t===tab);
+    document.getElementById("panel-"+t).classList.toggle("hidden", t!==tab);
+  });
+  if (tab === "monthly") renderStaffTable();
+}
+
+/* ── Slot ── */
+function switchSlot(slot) {
+  gSlot = slot;
+  SLOTS.forEach(s =>
+    document.getElementById("st-"+s).classList.toggle("active", s===slot)
+  );
+  renderGrid();
+}
+
+/* ================================================================
+   Storage
+   ================================================================ */
+function sKey(bi, date, slot) { return "sy_"+bi+"_"+date+"_"+slot; }
+
+function loadDay() {
+  const d = document.getElementById("form-date").value;
+  gData = {};
+  SLOTS.forEach(slot => {
+    const raw = localStorage.getItem(sKey(gBranch, d, slot));
+    gData[slot] = raw ? JSON.parse(raw) : { items:{}, sig:"" };
+  });
+  renderGrid();
+  refreshProgress();
+  refreshSlotTabs();
+}
+
+/* ================================================================
+   Check Grid
+   ================================================================ */
+function renderGrid() {
+  const sd = gData[gSlot] || { items:{}, sig:"" };
+  document.getElementById("items-grid").innerHTML = ITEMS.map(item => {
+    const checked = !!sd.items[item.id];
+    return '<div class="check-item' + (checked ? ' checked' : '') + '" onclick="toggleItem(\'' + item.id + '\')">'
+      + '<input type="checkbox"' + (checked ? ' checked' : '') + ' onclick="event.stopPropagation();toggleItem(\'' + item.id + '\')">'
+      + '<div class="item-info">'
+      + '<div class="item-name">' + item.icon + ' ' + item.name + '</div>'
+      + '<div class="item-std">' + item.std + '</div>'
+      + '</div>'
+      + '<div class="item-badge">' + (checked ? '✓' : '○') + '</div>'
+      + '</div>';
+  }).join("");
+  document.getElementById("sig-in").value = sd.sig || "";
+}
+
+function toggleItem(id) {
+  if (!gData[gSlot]) gData[gSlot] = { items:{}, sig:"" };
+  gData[gSlot].items[id] = !gData[gSlot].items[id];
+  renderGrid();
+  refreshProgress();
+  refreshSlotTabs();
+}
+
+/* ── Progress ── */
+function refreshProgress() {
+  let total = 0, done = 0;
+  SLOTS.forEach(s => {
+    ITEMS.forEach(item => {
+      total++;
+      if (gData[s] && gData[s].items[item.id]) done++;
+    });
+  });
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("prog-fill").style.width = pct + "%";
+  document.getElementById("prog-text").textContent = done + " / " + total;
+  refreshSlotTabs();
+}
+
+function refreshSlotTabs() {
+  SLOTS.forEach(s => {
+    const tab = document.getElementById("st-"+s);
+    const sd  = gData[s] || { items:{}, sig:"" };
+    const cnt = ITEMS.filter(i => sd.items[i.id]).length;
+    const done = cnt === ITEMS.length && !!(sd.sig && sd.sig.trim());
+    tab.textContent = SLOT_ICON[s] + " " + SLOT_LBL[s] + (cnt > 0 ? " ✓"+cnt : "");
+    tab.style.borderColor = (!tab.classList.contains("active") && done) ? "#1A6B35" : "";
+  });
+}
+
+/* ── Save / Clear ── */
+function saveSlot() {
+  const sig = document.getElementById("sig-in").value.trim();
+  if (!gData[gSlot]) gData[gSlot] = { items:{}, sig:"" };
+  gData[gSlot].sig = sig;
+  const d = document.getElementById("form-date").value;
+  localStorage.setItem(sKey(gBranch, d, gSlot), JSON.stringify(gData[gSlot]));
+  refreshSlotTabs(); refreshProgress();
+  showToast("✅ 已儲存「" + SLOT_LBL[gSlot] + "」時段記錄", "ok");
+}
+
+function clearSlot() {
+  if (!confirm("確定要清除「" + SLOT_LBL[gSlot] + "」時段的記錄嗎？")) return;
+  gData[gSlot] = { items:{}, sig:"" };
+  const d = document.getElementById("form-date").value;
+  localStorage.removeItem(sKey(gBranch, d, gSlot));
+  renderGrid(); refreshProgress(); refreshSlotTabs();
+  showToast("已清除「" + SLOT_LBL[gSlot] + "」時段記錄");
+}
+
+/* ================================================================
+   月表產生器
+   ================================================================ */
+function buildTable(bi, y, m) {
+  const b    = CFG.branches[bi] || {};
+  const days = new Date(y, m, 0).getDate();
+  var rows = "";
+  for (var d = 1; d <= days; d++) {
+    var ds = y + "-" + String(m).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+    var sd = {};
+    SLOTS.forEach(function(slot) {
+      var raw = localStorage.getItem(sKey(bi, ds, slot));
+      sd[slot] = raw ? JSON.parse(raw) : { items:{}, sig:"" };
+    });
+    var sigs = SLOTS.map(function(s){ return sd[s].sig; }).filter(Boolean).join(" / ");
+    var cells = ITEMS.map(function(item) {
+      return SLOTS.map(function(slot) {
+        var ok = !!(sd[slot].items && sd[slot].items[item.id]);
+        return '<td>' + (ok ? '<span class="chk-y">✓</span>' : '<span class="chk-n">─</span>') + '</td>';
+      }).join("");
+    }).join("");
+    rows += '<tr><td class="date-cell">' + d + '</td>' + cells
+          + '<td style="font-size:11px;padding:3px 5px">' + sigs + '</td></tr>';
+  }
+
+  var itemHeaders = ITEMS.map(function(i){
+    return '<th colspan="3">' + i.name + '<br><span style="font-size:9px;font-weight:normal;opacity:0.85">' + i.std + '</span></th>';
+  }).join("");
+  var subHeaders = ITEMS.map(function(){
+    return SLOTS.map(function(s){ return '<th class="th-sub">' + SLOT_LBL[s] + '</th>'; }).join("");
+  }).join("");
+
+  return '<div class="mon-title">'
+    + '信義房屋 &nbsp;<span class="mon-branch-tag">' + b.name + '分店</span>&nbsp; ' + y + ' 年 ' + m + ' 月 清潔檢查紀錄表'
+    + (b.manager ? '&nbsp;&nbsp;店主管：' + b.manager : '')
+    + '</div>'
+    + '<table class="mon-table">'
+    + '<thead>'
+    + '<tr><th rowspan="2" style="width:36px">日期</th>' + itemHeaders + '<th rowspan="2" style="min-width:70px">值班簽名</th></tr>'
+    + '<tr>' + subHeaders + '</tr>'
+    + '</thead>'
+    + '<tbody>' + rows + '</tbody>'
+    + '</table>';
+}
+
+function renderStaffTable() {
+  var y = parseInt(document.getElementById("s-year").value);
+  var m = parseInt(document.getElementById("s-month").value);
+  document.getElementById("staff-tbl-wrap").innerHTML = buildTable(gBranch, y, m);
+}
+
+function renderMgrTable() {
+  var bi = document.getElementById("mgr-branch").value;
+  if (bi === "") {
+    document.getElementById("mgr-tbl-wrap").innerHTML = '<p style="color:#ccc;text-align:center;padding:40px">請選擇分店與月份查詢</p>';
+    document.getElementById("mgr-summary").innerHTML = "";
+    return;
+  }
+  var y   = parseInt(document.getElementById("mgr-year").value);
+  var m   = parseInt(document.getElementById("mgr-month").value);
+  var idx = parseInt(bi);
+
+  document.getElementById("mgr-tbl-wrap").innerHTML = buildTable(idx, y, m);
+
+  // 統計
+  var days = new Date(y, m, 0).getDate();
+  var total = 0, done = 0, daysSet = new Set();
+  for (var d = 1; d <= days; d++) {
+    var ds = y + "-" + String(m).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+    SLOTS.forEach(function(slot) {
+      var raw  = localStorage.getItem(sKey(idx, ds, slot));
+      var data = raw ? JSON.parse(raw) : { items:{} };
+      ITEMS.forEach(function(item) {
+        total++;
+        if (data.items && data.items[item.id]) { done++; daysSet.add(d); }
+      });
+    });
+  }
+  var pct   = total ? Math.round(done/total*100) : 0;
+  var color = pct >= 80 ? "#1A6B35" : pct >= 50 ? "#B8860B" : "#C8102E";
+  var b     = CFG.branches[idx];
+  document.getElementById("mgr-summary").innerHTML =
+    '<div class="summary-bar">'
+    + '<div>📅 <strong>' + y + ' 年 ' + m + ' 月</strong></div>'
+    + '<div>🏢 <strong>' + b.name + ' 分店</strong></div>'
+    + '<div>👤 店主管：<strong>' + b.manager + '</strong></div>'
+    + '<div>✅ 完成率：<strong style="color:' + color + ';font-size:20px">' + pct + '%</strong></div>'
+    + '<div style="color:#aaa;font-size:13px">（' + done + ' / ' + total + ' 項次，' + daysSet.size + ' 天有記錄）</div>'
+    + '</div>';
+}
+
+/* ── Toast ── */
+function showToast(msg, type) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (type || "");
+  t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 3000);
+}
+</script>
+</body>
+</html>
