@@ -357,13 +357,12 @@
               <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
               <div class="prog-text" id="prog-text">0 / 15</div>
             </div>
-            <div style="font-size:11px;color:#bbb;margin-top:3px">今日三時段完成進度</div>
+            <div style="font-size:11px;color:#bbb;margin-top:3px">今日兩時段完成進度</div>
           </div>
         </div>
 
         <div class="slot-tabs">
           <button class="slot-tab active" id="st-morning" onclick="switchSlot('morning')">🌅 早</button>
-          <button class="slot-tab"        id="st-midday"  onclick="switchSlot('midday')">☀️ 中</button>
           <button class="slot-tab"        id="st-evening" onclick="switchSlot('evening')">🌙 晚</button>
         </div>
 
@@ -489,9 +488,9 @@ const ITEMS = [
   { id:"restroom",  icon:"🚻", name:"廁所",           std:"地板乾淨、洗手台乾淨、馬桶無髒污" },
   { id:"staffarea", icon:"💼", name:"同仁座位區",    std:"桌面整齊、無垃圾"             },
 ];
-const SLOTS      = ["morning","midday","evening"];
-const SLOT_LBL   = { morning:"早", midday:"中", evening:"晚" };
-const SLOT_ICON  = { morning:"🌅", midday:"☀️", evening:"🌙" };
+const SLOTS      = ["morning","evening"];
+const SLOT_LBL   = { morning:"早", evening:"晚" };
+const SLOT_ICON  = { morning:"🌅", evening:"🌙" };
 
 /* ── State ── */
 let gBranch = null;
